@@ -214,8 +214,6 @@ if __name__ == "__main__":
         
     dftomap(solution_df, 'solution_multi/solution.html')
     
-    pareto_front_plot_minimize(record_cost_1,record_cost_2)
-    
     
     print('finish')
     del optimize
