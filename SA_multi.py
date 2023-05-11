@@ -14,6 +14,8 @@ import geoplot
 from geopandas import GeoDataFrame
 import folium
 
+import time
+
 
 def haversine(lat1, lon1, lat2, lon2, to_radians=True, earth_radius=6371):
     """
@@ -151,35 +153,31 @@ class SA:
             self.record_2.append(second)
             self.tempReduction()
             
-            print('Temp:',self.currTemp, 'fitness value:',0.5*first+0.5*second)
+            #print('Temp:',self.currTemp, 'fitness value:',0.5*first+0.5*second)
                     
-        return self.solution, self.evaluate(self.solution),self.record_wsm,self.record_1,self.record_2
+        return self.solution, 0.5*first+0.5*second,self.record_wsm,self.record_1,self.record_2
 
-def pareto_front_plot_minimize(x, y):
-    # Sort the arrays based on the first array (x) in ascending order
-    sorted_indices = sorted(range(len(x)), key=lambda i: (x[i], y[i]))
-    sorted_x = [x[i] for i in sorted_indices]
-    sorted_y = [y[i] for i in sorted_indices]
+def average_lists_by_index(list_of_lists):
+    if not list_of_lists:
+        return None
 
-    pareto_front_x = [sorted_x[0]]
-    pareto_front_y = [sorted_y[0]]
-
-    for i in range(1, len(sorted_x)):
-        if sorted_y[i] <= min(pareto_front_y):
-            pareto_front_x.append(sorted_x[i])
-            pareto_front_y.append(sorted_y[i])
-
-    plt.plot(pareto_front_x, pareto_front_y, '-o')
-    plt.xlabel('First Trip distance')
-    plt.ylabel('Second Trip distance')
-    plt.title('Pareto Front Plot')
-    plt.savefig('solution_multi/solution_pareto_plot.png')
-    plt.show()
+    num_lists = len(list_of_lists)
+    list_length = len(list_of_lists[0])
+    
+    averages = [0] * list_length  # Initialize the averages list with zeros
+    
+    for sublist in list_of_lists:
+        for i in range(list_length):
+            averages[i] += sublist[i]
+    
+    averages = [average / num_lists for average in averages]  # Calculate the averages by dividing by the number of lists
+    
+    return averages
     
 if __name__ == "__main__":
     
     # load data and convert to list
-    df = pd.read_csv('airbnb_10.csv')
+    df = pd.read_csv('airbnb_18.csv')
     
     allHotel = df_to_list(df)
     
@@ -190,17 +188,40 @@ if __name__ == "__main__":
     
     solution = []
     fitness = 0 
+    all_fitness = []
     record_cost_1 = []
     record_cost_2 = []
     record_wsm = []
     
+    all_record_wsm = []
+    avg_record_wsm = []
     
-    optimize = SA(initialSolution,evaluate,neighbor,initialTemp=200,iterationPerTemp=200,alpha=0.98,finalTemp=0.01)
-    solution, fitness,record_wsm,record_cost_1,record_cost_2 = optimize.run()
-
-    print('solution',len(record_cost_1))
+    start = 0
+    end = 0
+    
+    for i in range(1):
+        #start = time.time()
+        print(i)
+        optimize = SA(initialSolution,evaluate,neighbor,initialTemp=100,iterationPerTemp=100,alpha=0.98,finalTemp=0.01)
+        solution, fitness,record_wsm,record_cost_1,record_cost_2 = optimize.run()
         
-    plt.plot(record_wsm)
+        all_fitness.append(fitness)
+        all_record_wsm.append(record_wsm)
+        
+        #end = time.time()
+
+
+        del optimize
+        
+    print('time',end-start)
+        
+    print('fitness',all_fitness)
+    # avg fitness
+    print('The average best fitness value is:',sum(all_fitness)/len(all_fitness))
+    
+    avg_record_wsm = average_lists_by_index(all_record_wsm)
+    
+    plt.plot(avg_record_wsm)
     plt.title('Simulated Annealing')
     plt.ylabel('Cost')
     plt.xlabel('iteration')
@@ -216,7 +237,6 @@ if __name__ == "__main__":
     
     
     print('finish')
-    del optimize
     
     
 

@@ -14,6 +14,8 @@ import geoplot
 from geopandas import GeoDataFrame
 import folium
 
+import time
+
 BRONX_HOTEL = []
 BROOKLYN_HOTEL = []
 MANHATTAN_HOTEL = []
@@ -22,15 +24,6 @@ STATEN_ISLAND_HOTEL = []
 
 
 def haversine(lat1, lon1, lat2, lon2, to_radians=True, earth_radius=6371):
-    """
-    slightly modified version: of http://stackoverflow.com/a/29546836/2901002
-
-    Calculate the great circle distance between two points
-    on the earth (specified in decimal degrees or in radians)
-
-    All (lat, lon) coordinates must have numeric dtypes and be of equal length.
-
-    """
     if to_radians:
         lat1, lon1, lat2, lon2 = np.radians([lat1, lon1, lat2, lon2])
 
@@ -160,38 +153,94 @@ class SA:
             self.record.append(self.evaluate(self.solution))
             self.tempReduction()
             
-            print('Temp:',self.currTemp, 'fitness value:',self.evaluate(self.solution))
+            #print('Temp:',self.currTemp, 'fitness value:',self.evaluate(self.solution))
                     
         return self.solution, self.evaluate(self.solution),self.record
+
+
+
+def average_lists_by_index(list_of_lists):
+    if not list_of_lists:
+        return None
+
+    num_lists = len(list_of_lists)
+    list_length = len(list_of_lists[0])
     
+    averages = [0] * list_length  # Initialize the averages list with zeros
+    
+    for sublist in list_of_lists:
+        for i in range(list_length):
+            averages[i] += sublist[i]
+    
+    averages = [average / num_lists for average in averages]  # Calculate the averages by dividing by the number of lists
+    
+    return averages
  
 if __name__ == "__main__":
     
     # load data and convert to list
-    df = pd.read_csv('airbnb_clean.csv')
+    df = pd.read_csv('airbnb_9.csv')
 
     allHotel = df_to_list(df)
-    
-    #view all hotel
-    for i in range(3):
-        print(allHotel[i][4],allHotel[i][5],allHotel[i][6],allHotel[i][7])
     
     TOTAL_HOTEL = len(allHotel)
     
     ### parameter setup
-    initialSolution = [ allHotel[random_index_hotel(allHotel)] for i in range(30)]
-    evaluate_ = evaluate_wsm
+    initialSolution = [ allHotel[i] for i in range(TOTAL_HOTEL)]
+    evaluate_ = evaluate
     
     
     list_parameter = [0.98,0.9,0.70,0.6,0.5]
     
-    cost_all = []
-    
     
     record = []
+    all_record = []
+    avg_record = []
     
+    cost_all = []
+    
+    best_cost = float('inf')
+    best_solution = []
+    
+    start = 0
+    end = 0
     print('\n\n\n')
     
+    for i in range(1):
+        print(i)
+        optimize = SA(intialsolution=initialSolution,solutionEvaluator=evaluate_,neighborOperator=neighbor, \
+                initialTemp=100,iterationPerTemp=100,alpha=0.98,finalTemp=0.01)
+        start = time.time()
+        solution, cost,record = optimize.run()
+        end = time.time()
+        all_record.append(record)
+        
+        cost_all.append(cost)
+        
+        if best_cost > cost:
+            best_cost = cost
+            best_solution = solution
+        
+        del optimize
+        
+    avg_record = average_lists_by_index(all_record)
+    
+    print('time',end-start)
+    print('Best solution fitness value:',best_cost)
+    print('The average best fitness value is:',sum(cost_all )/len(cost_all))
+    
+    plt.plot(avg_record)
+    plt.title('Simulated Annealing')
+    plt.ylabel('Cost')
+    plt.xlabel('iteration')
+    plt.savefig('solution/solution_plot.png')
+    
+    solution_df = list_to_df(list(best_solution))
+    solution_df.to_csv('solution/solution.csv', index=True)
+    dftomap(solution_df, 'solution/solution.html')
+    
+    print(cost)
+    '''
     for parameter in list_parameter:
         
         optimize = SA(intialsolution=initialSolution,solutionEvaluator=evaluate_,neighborOperator=neighbor, \
@@ -228,6 +277,7 @@ if __name__ == "__main__":
     
     for i in range(len(list_parameter)):
         print('alpha  = ',list_parameter[i],'cost = ',cost_all[i])
+    '''
     
         
         
