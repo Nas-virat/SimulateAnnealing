@@ -199,16 +199,16 @@ if __name__ == "__main__":
     start = 0
     end = 0
     
-    for i in range(1):
-        #start = time.time()
+    for i in range(100):
+        start = time.time()
         print(i)
-        optimize = SA(initialSolution,evaluate,neighbor,initialTemp=100,iterationPerTemp=100,alpha=0.98,finalTemp=0.01)
+        optimize = SA(initialSolution,evaluate,neighbor,initialTemp=100,iterationPerTemp=10,alpha=0.98,finalTemp=0.01)
         solution, fitness,record_wsm,record_cost_1,record_cost_2 = optimize.run()
         
         all_fitness.append(fitness)
         all_record_wsm.append(record_wsm)
         
-        #end = time.time()
+        end = time.time()
 
 
         del optimize

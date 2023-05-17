@@ -121,7 +121,7 @@ def dftomap(df_solution,file_path):
 
 if __name__ == "__main__":
     # load data and convert to list
-    df = pd.read_csv('airbnb_12.csv')
+    df = pd.read_csv('airbnb_8.csv')
 
     allHotel = df_to_list(df)
     

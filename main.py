@@ -92,6 +92,7 @@ def dftomap(df_solution,file_path):
     points = []
     for i in range(len(place_lat)):
         points.append([place_lat[i], place_lng[i]])
+    points.append([place_lat[0], place_lng[0]])
 
     for index,lat in enumerate(place_lat):
         folium.Marker([lat, 
@@ -179,7 +180,7 @@ def average_lists_by_index(list_of_lists):
 if __name__ == "__main__":
     
     # load data and convert to list
-    df = pd.read_csv('airbnb_9.csv')
+    df = pd.read_csv('airbnb_12.csv')
 
     allHotel = df_to_list(df)
     
@@ -209,7 +210,7 @@ if __name__ == "__main__":
     for i in range(1):
         print(i)
         optimize = SA(intialsolution=initialSolution,solutionEvaluator=evaluate_,neighborOperator=neighbor, \
-                initialTemp=100,iterationPerTemp=100,alpha=0.98,finalTemp=0.01)
+                initialTemp=100,iterationPerTemp=1,alpha=0.98,finalTemp=0.01)
         start = time.time()
         solution, cost,record = optimize.run()
         end = time.time()

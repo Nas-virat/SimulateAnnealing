@@ -39,8 +39,6 @@ class SA:
                     if random.uniform(0, 1) < math.exp(-cost / self.currTemp):
                         self.solution = neighbor
                         
-            self.record.append(self.evaluate(self.solution))
-            self.tempReduction()
                     
         return self.solution, self.evaluate(self.solution),self.record
                 
